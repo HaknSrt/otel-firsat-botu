@@ -7,7 +7,7 @@ BOT_TOKEN = os.environ["BOT_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
 SEARCH_MONTH = os.environ.get("SEARCH_MONTH", "2026-09")
 CHILD_AGE = os.environ.get("CHILD_AGE", "8")
-LOCATION_QUERY = "Antalya"
+LOCATION_KEY = "g297962"  # Antalya
 NIGHTS = 5
 BUDGET_TRY = 50000
 MIN_RATING = 4.0
@@ -19,11 +19,6 @@ def send_telegram(text):
 def get_usd_to_try():
     r = requests.get("https://api.frankfurter.dev/v1/latest", params={"base": "USD", "symbols": "TRY"})
     return r.json()["rates"]["TRY"]
-
-def get_location_key(query):
-    r = requests.get("https://data.xotelo.com/api/search", params={"query": query, "location_type": "geo"})
-    results = r.json().get("result", {}).get("list", [])
-    return results[0]["location_key"] if results else None
 
 def get_hotel_list(location_key, offset=0, limit=100):
     r = requests.get("https://data.xotelo.com/api/list", params={
@@ -52,14 +47,10 @@ def candidate_checkins(year_month):
 
 def main():
     usd_try = get_usd_to_try()
-    location_key = get_location_key(LOCATION_QUERY)
-    if not location_key:
-        send_telegram("⚠️ Antalya için konum bulunamadı.")
-        return
 
     hotels, offset = [], 0
     while offset < 300:
-        batch = get_hotel_list(location_key, offset=offset)
+        batch = get_hotel_list(LOCATION_KEY, offset=offset)
         if not batch:
             break
         hotels.extend(batch)
