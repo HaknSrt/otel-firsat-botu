@@ -61,9 +61,11 @@ def get_rate(hotel_key, chk_in, chk_out):
     data = r.json()
     result = data.get("result")
     if not result:
+        print("HATA:", hotel_key, chk_in, data.get("error"))
         return None
     rates = result.get("rates") or []
     if not rates:
+        print("FIYAT YOK:", hotel_key, chk_in)
         return None
     return min(rate["rate"] for rate in rates)
 
