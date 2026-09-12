@@ -8,7 +8,7 @@ CHAT_ID = os.environ["CHAT_ID"]
 SEARCH_MONTH = os.environ.get("SEARCH_MONTH", "2026-09")
 CHILD_AGE = os.environ.get("CHILD_AGE", "8")
 NIGHTS = 5
-BUDGET_TRY = 50000
+BUDGET_TRY = 60000
 
 HOTELS = [
     {"name": "AQI Pegasos World", "key": "g297967-d1144460"},
@@ -72,9 +72,7 @@ def candidate_checkins(year_month):
     days_in_month = calendar.monthrange(year, month)[1]
     out = []
     for day in range(1, days_in_month - NIGHTS + 1):
-        d = date(year, month, day)
-        if d.weekday() in (4, 5):
-            out.append(d)
+        out.append(date(year, month, day))
     return out
 
 def main():
