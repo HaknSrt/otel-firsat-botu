@@ -18,19 +18,24 @@ def send_telegram(text):
 
 def get_usd_to_try():
     r = requests.get("https://api.frankfurter.dev/v1/latest", params={"base": "USD", "symbols": "TRY"})
+    print("KUR CEVABI:", r.status_code, r.text[:300])
     return r.json()["rates"]["TRY"]
 
 def get_hotel_list(location_key, offset=0, limit=100):
     r = requests.get("https://data.xotelo.com/api/list", params={
         "location_key": location_key, "offset": offset, "limit": limit, "sort": "best_value"
     })
-    return r.json().get("result", {}).get("list", [])
+    print("OTEL LISTESI CEVABI:", r.status_code, r.text[:500])
+    return r.json().get("result", {}).get("list", []) if r.json().get("result") else []
 
 def get_rate(hotel_key, chk_in, chk_out):
     params = {"hotel_key": hotel_key, "chk_in": chk_in, "chk_out": chk_out, "adults": 2, "age_of_children": CHILD_AGE}
     r = requests.get("https://data.xotelo.com/api/rates", params=params)
     data = r.json()
-    rates = data.get("result", {}).get("rates") or []
+    result = data.get("result")
+    if not result:
+        return None
+    rates = result.get("rates") or []
     if not rates:
         return None
     return min(rate["rate"] for rate in rates)
@@ -47,14 +52,14 @@ def candidate_checkins(year_month):
 
 def main():
     usd_try = get_usd_to_try()
+    print("USD/TRY:", usd_try)
 
-    hotels, offset = [], 0
-    while offset < 300:
-        batch = get_hotel_list(LOCATION_KEY, offset=offset)
-        if not batch:
-            break
-        hotels.extend(batch)
-        offset += 100
+    hotels = get_hotel_list(LOCATION_KEY, offset=0)
+    print("BULUNAN OTEL SAYISI:", len(hotels))
+
+    if not hotels:
+        print("Otel listesi boş geldi, API cevabına bakılmalı.")
+        return
 
     checkins = candidate_checkins(SEARCH_MONTH)
     found = 0
